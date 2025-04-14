@@ -1,0 +1,69 @@
+﻿version: '3.5'
+
+networks:
+  php_space:
+    driver: ${NETWORKS_DRIVER}
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+        - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
+    volumes:
+      - ${WWW_PATH}:/home/www/product
+      - ./nginx/sites/:/etc/nginx/sites-available
+      - ./data/logs-nginx/:/var/log/nginx
+    ports:
+      - ${NGINX_PORT_HTTP}:80
+    depends_on:
+      - php83-fpm
+    networks:
+      php_space:
+        aliases:
+          - product.loc
+
+  # PHP83-FPM
+  php83-fpm:
+    build:
+      context: ./php-fpm
+      dockerfile: ${PHP_VERSION}.Dockerfile
+    volumes:
+      - ${WWW_PATH}:/home/www/product
+      - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+    expose:
+      - "9000"
+      - "5174"
+    ports:
+      - 5174:5174
+    extra_hosts:
+      - "dockerhost:${DOCKER_HOST_IP}"
+    networks:
+      - php_space
+
+  postgres:
+    image: postgres:14
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: test_database
+    networks:
+      - php_space
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8089:8080"
+    networks:
+      - php_space
+
+volumes:
+  pgdata:

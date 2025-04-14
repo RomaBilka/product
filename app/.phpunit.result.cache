@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Tests\\Services\\ProductServiceTest::testCreateProductSuccessfully":8,"ProductControllerIntegrationTest::testShowReturnsProduct":7},"times":{"Tests\\Services\\ProductServiceTest::testCreateProductSuccessfully":0.069,"ProductControllerIntegrationTest::testShowReturnsProduct":0.261}}
